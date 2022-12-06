@@ -132,4 +132,5 @@ dmypy.json
 *.bat
 *.log
 data/*
+!data/generated.csv
 models/*
