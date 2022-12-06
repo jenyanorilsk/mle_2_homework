@@ -101,10 +101,14 @@ class Trainer():
 
         # считаем IDF - здесь уже будут дробные значения, т.к. учёт по пользователям, это и будут фичи
         idf = IDF(inputCol="rawFeatures", outputCol="features")
-        idfModel = idf.fit(tf_features)
+        idf = idf.fit(tf_features)
+
+
+        self.log.info(f"IDF model type: {type(idf)}")
+
 
         try:
-            idfModel.write().overwrite().save(path)
+            idf.write().overwrite().save(path)
             self.config["MODEL"]["IDF_PATH"] = path
             self.log.info(f"IDF model stored at {path}")
         except:
@@ -115,7 +119,7 @@ class Trainer():
         if not self._remove_stored(path):
             return False
 
-        idf_features = idfModel.transform(tf_features)
+        idf_features = idf.transform(tf_features)
 
         try:
             idf_features.write.format("parquet").save(path, mode='overwrite')
