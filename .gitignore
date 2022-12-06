@@ -130,4 +130,6 @@ dmypy.json
 
 # Custom
 *.bat
+*.log
 /data
+/models/

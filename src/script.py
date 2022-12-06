@@ -10,21 +10,38 @@ from pyspark.mllib.linalg.distributed import MatrixEntry, CoordinateMatrix
 # для вывода номера строки в отладке
 from inspect import currentframe, getframeinfo
 
+import os
+import configparser
+
+
+import traceback
+from logger import Logger
+
+SHOW_LOG = True
+logger = Logger(SHOW_LOG)
+log = logger.get_logger(__name__)
+
+
+config = configparser.ConfigParser()
+config_path = os.path.join(os.getcwd(), 'config.ini')
+config.read(config_path)
+
+
 
 # входной файл
-INPUT = "./data/generated.csv"
+INPUT_FILENAME = config.get("DATA", "INPUT_FILE", fallback="./data/generated.csv")
+log.info(f'DATA FILENAME = {INPUT_FILENAME}')
 # число фичей TF
-FEATURES_COUNT = 10000
+FEATURES_COUNT = config.getint("MODEL", "FEATURES_COUNT", fallback=10000)
+log.info(f'MODEL\'S FEATURES_COUNT = {FEATURES_COUNT}')
 
-# параметры spark
-MASTER = "local"
-APP_NAME = "second_lab"
-NUM_PROCESSORS = "3"
-NUM_EXECUTORS = "1"
+
+from adapter import SparkAdapter
+
 # для тестового запуска на маленьком датасете 
 # большое число партиций только тормозит
 #NUM_PARTITIONS = 40
-NUM_PARTITIONS = None
+NUM_PARTITIONS = config.get("SPARK", "NUM_PARTITIONS", fallback=None)
 
 # вывод отладочной информации
 DEBUG_PRINT = True
@@ -52,33 +69,19 @@ def recomend(all_watched_matrix, ordered_similarity, user_watched):
     pass
 
 
-conf = SparkConf()
-
-conf.set("spark.app.name", APP_NAME)
-conf.set("spark.master", MASTER)
-conf.set("spark.executor.cores", NUM_PROCESSORS)
-conf.set("spark.executor.instances", NUM_EXECUTORS)
-conf.set("spark.executor.memory", "8g")
-conf.set("spark.locality.wait", "0")
-conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-conf.set("spark.kryoserializer.buffer.max", "2000")
-conf.set("spark.executor.heartbeatInterval", "6000s")
-conf.set("spark.network.timeout", "10000000s")
-conf.set("spark.shuffle.spill", "true")
-conf.set("spark.driver.memory", "8g")
-conf.set("spark.driver.maxResultSize", "8g")
-
 # создание контекста, вывод конфига
 
-sc = SparkContext(conf=conf)
-spark = SparkSession(sc)
+try:
+    adapter = SparkAdapter()
+    sc = adapter.get_context()
+    spark = adapter.get_session()
+except:
+    log.error(traceback.format_exc())
 
-print('\t>>>>', 'spark config:')
-for conf in sc.getConf().getAll():
-    print('\t>>>>', conf[0].upper(), ' = ', conf[1])
-print()
 
-raw = sc.textFile(INPUT, NUM_PARTITIONS)
+exit(0)
+
+raw = sc.textFile(INPUT_FILENAME, NUM_PARTITIONS)
 
 # записи, сгруппированные по user_id
 

@@ -19,6 +19,6 @@ ENV SPARK_EXECUTOR_MEMORY=8G
 ENV SPARK_WORKER_CORES=12
 ENV SPARK_WORKER_MEMORY=8G
 
-COPY /src .
+COPY . .
 
-CMD [ "spark-submit", "./script.py"]
+CMD [ "spark-submit", "./src/train.py"]
