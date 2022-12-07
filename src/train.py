@@ -43,12 +43,11 @@ class Trainer():
             return False
         return True
 
-    def _calc_watched_matrix(self, grouped) -> bool:
+    def _calc_watched_matrix(self, grouped, path='./models/WATCHED') -> bool:
         """
         Подготовка матрицы просмотренных фильмов
         """
 
-        path = "./models/WATCHED"
         if not self._remove_stored(path):
             return False
 
@@ -65,12 +64,11 @@ class Trainer():
             return False
         return os.path.exists(path)
     
-    def _train_tf(self, grouped):
+    def _train_tf(self, grouped, path='./models/TF_MODEL'):
         """
         Обучение TF модели
         """
 
-        path = "./models/TF_MODEL"
         if not self._remove_stored(path):
             return None
 
@@ -85,7 +83,6 @@ class Trainer():
         hashingTF = HashingTF(inputCol="movie_ids", outputCol="rawFeatures", numFeatures=FEATURES_COUNT)
         tf_features = hashingTF.transform(df)
 
-        file_path = "./models/TF_MODEL"
         try:
             hashingTF.write().overwrite().save(path)
             self.config["MODEL"]["TF_PATH"] = path
@@ -96,12 +93,26 @@ class Trainer():
         
         return tf_features
     
-    def _train_idf(self, tf_features) -> bool:
+    def _save_idf_features(self, idf_features, path='./models/IDF_FEATURES') -> bool:
+        
+        if not self._remove_stored(path):
+            return False
+
+        try:
+            idf_features.write.format("parquet").save(path, mode='overwrite')
+            self.config["MODEL"]["IDF_FEATURES_PATH"] = path
+            self.log.info(f"IDF features stored at {path}")
+        except:
+            self.log.error(traceback.format_exc())
+            return False
+        return True
+
+    
+    def _train_idf(self, tf_features, path='./models/IDF_MODEL') -> bool:
         """
         Обучение IDF модели
         """
 
-        path = "./models/IDF_MODEL"
         if not self._remove_stored(path):
             return False
 
@@ -119,24 +130,16 @@ class Trainer():
             self.log.error(traceback.format_exc())
             return False
 
-        path = "./models/IDF_FEATURES"
-        if not self._remove_stored(path):
-            return False
-
+        # считаем значения фичей для существующих пользователей и сохраняем их
         idf_features = idf.transform(tf_features)
-
-        try:
-            idf_features.write.format("parquet").save(path, mode='overwrite')
-            self.config["MODEL"]["IDF_FEATURES_PATH"] = path
-            self.log.info(f"IDF features stored at {path}")
-        except:
-            self.log.error(traceback.format_exc())
+        if not self._save_idf_features(idf_features):
             return False
         
         return True
 
 
-    def train_models(self) -> bool:
+    def train_models(self, input_filename=None) -> bool:
+        
         try:
             adapter = SparkAdapter()
             sc = adapter.get_context()
@@ -144,7 +147,10 @@ class Trainer():
         except:
             self.log.error(traceback.format_exc())
         
-        INPUT_FILENAME = self.config.get("DATA", "INPUT_FILE", fallback="./data/generated.csv")
+        if input_filename is None:
+            INPUT_FILENAME = self.config.get("DATA", "INPUT_FILE", fallback="./data/generated.csv")
+        else:
+            INPUT_FILENAME = input_filename
         self.log.info(f'train data filename = {INPUT_FILENAME}')
 
         # чтение файла, группировка записей по user_id
