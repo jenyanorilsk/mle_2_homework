@@ -1,5 +1,5 @@
 pipeline {
-    
+
     agent any
 
     environment {
@@ -103,6 +103,7 @@ pipeline {
 
     }
 
+    /*
     post {
         always {
             bat encoding: 'UTF-8', script: '''
@@ -111,5 +112,6 @@ pipeline {
                     '''
         }
     }
+    */
 
 }
