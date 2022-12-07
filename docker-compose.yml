@@ -8,7 +8,7 @@ services:
     - type: bind
       source: ./data
       target: /data
-    command: bash -c "spark-submit src/preprocess.py && spark-submit src/train.py && spark-submit src/process.py"
+    command: bash -c "spark-submit src/preprocess.py && spark-submit src/train.py && spark-submit src/process.py & python -m pytest tests --disable-pytest-warnings"
     ports:
       - 8000:8000
     environment:

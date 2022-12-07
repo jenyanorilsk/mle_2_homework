@@ -22,4 +22,4 @@ ENV SPARK_WORKER_MEMORY=8G
 COPY . .
 
 #CMD [ "spark-submit", "./src/train.py"]
-CMD ["python", "-m", "pytest", "tests", "--disable-pytest-warnings"]
+#CMD ["python", "-m", "pytest", "tests", "--disable-pytest-warnings"]
