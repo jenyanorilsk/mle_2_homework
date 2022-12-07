@@ -50,7 +50,7 @@ class Preprocessor():
             self.log.info(f'Saved to {path}')
         pass
 
-    def get_data(self):
+    def get_data(self) -> bool:
 
         path = self.config.get("DATA", "INPUT_FILE")
         if path is None or path == '':
@@ -60,9 +60,10 @@ class Preprocessor():
 
         if not os.path.exists(path):
             self.log.info(f'Data file doesn\'t exist')
-            self._download()
-        else:
-            self.log.info('Everything is ok')
+            return self._download()
+        
+        self.log.info('Everything is ok')
+        return True
 
         pass
 
