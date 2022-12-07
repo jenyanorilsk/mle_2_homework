@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  app:
+    build: 
+      context: ./
+      dockerfile: ./Dockerfile
+    volumes:
+    - type: bind
+      source: ./data
+      target: /data
+    command: bash -c "spark-submit src/preprocess.py && spark-submit src/train.py && spark-submit src/process.py"
+    ports:
+      - 8000:8000
+    environment:
+      PYTHONUNBUFFERED: 1
