@@ -146,6 +146,7 @@ class Trainer():
             spark = adapter.get_session()
         except:
             self.log.error(traceback.format_exc())
+            return False
         
         if input_filename is None:
             INPUT_FILENAME = self.config.get("DATA", "INPUT_FILE", fallback="./data/generated.csv")
@@ -154,7 +155,7 @@ class Trainer():
         self.log.info(f'train data filename = {INPUT_FILENAME}')
 
         # чтение файла, группировка записей по user_id
-        grouped = sc.textFile(INPUT_FILENAME, adapter.num_partitions) \
+        grouped = sc.textFile(INPUT_FILENAME, adapter.num_parts) \
             .map(lambda x: map(int, x.split())).groupByKey() \
             .map(lambda x : (x[0], list(x[1])))
         
