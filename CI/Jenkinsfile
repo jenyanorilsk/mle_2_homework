@@ -65,7 +65,7 @@ pipeline {
         stage('Checkout container logs') {
             steps {
 
-                dir("mle_1_homework") {
+                dir("mle_2_homework") {
                         bat encoding: 'UTF-8', script: '''
                             chcp 65001
                             docker-compose up -d
@@ -84,7 +84,7 @@ pipeline {
 
         stage('Checkout coverage report'){
             steps{
-                dir("mle_1_homework"){
+                dir("mle_2_homework"){
                     bat encoding: 'UTF-8', script: '''
                         chcp 65001
                         docker-compose logs -t --tail 10
