@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  app:
+    build: 
+      context: ./
+      dockerfile: ./Dockerfile
+    # для отладки, чтобы не скачивать каждый раз данные, я пробрасываю папку /data/
+    volumes:
+    - type: bind
+      source: ./data
+      target: /data
+    # в этом варианте запускается только pipeline, без теста
+    command: bash -c "spark-submit src/preprocess.py && spark-submit src/train.py && spark-submit src/process.py"
+    ports:
+      - 8000:8000
+    environment:
+      PYTHONUNBUFFERED: 1
+    image: jenyanorilsk/mle_lab2:latest

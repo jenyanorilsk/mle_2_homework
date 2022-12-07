@@ -49,13 +49,13 @@ pipeline {
                     try {
                         bat encoding: 'UTF-8', script: '''
                             chcp 65001
-                            cd mle_2_homework && docker-compose -f docker-compose-CI.yml build'''
+                            cd mle_2_homework && docker-compose -f docker-compose-CD.yml build'''
                     }
                     finally {
                         bat encoding: 'UTF-8', script: '''
                             chcp 65001
                             cd mle_2_homework
-                            docker-compose up -d
+                            docker-compose -f docker-compose-CD.yml up -d
                             '''
                     }
                 }
@@ -67,7 +67,7 @@ pipeline {
                 dir("mle_2_homework") {
                         bat encoding: 'UTF-8', script: '''
                             chcp 65001
-                            docker-compose -f docker-compose-ID.yml up -d
+                            docker-compose up -d
                             for /f %%i in ('docker ps -qf "name=^mle_2_homework_app_1"') do set containerId=%%i
                             echo %containerId%
                             IF "%containerId%" == "" (

@@ -39,7 +39,7 @@ class SparkAdapter():
         self.spark_config.set("spark.driver.memory", "8g")
         self.spark_config.set("spark.driver.maxResultSize", "8g")
 
-        self.num_partitions = self.config.get("SPARK", "NUM_PARTITIONS", fallback=None)
+        self.num_parts = self.config.getint("SPARK", "NUM_PARTS", fallback=None)
 
         # выводим текущий конфиг
         self.log.info("Spark config:")

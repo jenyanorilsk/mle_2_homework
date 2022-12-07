@@ -9,9 +9,9 @@ services:
     - type: bind
       source: ./data
       target: /data
-    # в этом варианте полного файла запускается всё - выполнение пайплайна + тест
+    # в этом варианте запускается только тест
     # ключ -s у pytest не даёт ему перехватывать вывод, мне кажется полезно видеть лог, особенно если возникнут ошибки
-    command: bash -c "spark-submit src/preprocess.py && spark-submit src/train.py && spark-submit src/process.py && python -m pytest tests -s --disable-pytest-warnings"
+    command: bash -c "python -m pytest tests -s --disable-pytest-warnings"
     ports:
       - 8000:8000
     environment:

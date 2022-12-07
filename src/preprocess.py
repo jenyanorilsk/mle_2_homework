@@ -24,11 +24,7 @@ class Preprocessor():
 
         pass
 
-    def _download(self) -> bool:
-        url = self.config.get("DATA", "SOURCE_URL")
-        if url is None or url == '':
-            self.log.error('File source url is not specified')
-            raise Exception('File source url is not specified')
+    def _download(self, url, path) -> bool:
         
         self.log.info(f'Downloading from {url}')
         response = requests.get(url)
@@ -48,9 +44,11 @@ class Preprocessor():
         else:
             open(path, 'wb').write(response.content)
             self.log.info(f'Saved to {path}')
+        return True
         pass
 
     def get_data(self) -> bool:
+
 
         path = self.config.get("DATA", "INPUT_FILE")
         if path is None or path == '':
@@ -58,12 +56,16 @@ class Preprocessor():
             raise Exception('Input file is not specified')
         self.log.info(f'Data file is {path}')
 
-        if not os.path.exists(path):
-            self.log.info(f'Data file doesn\'t exist')
-            return self._download()
-        
-        self.log.info('Everything is ok')
-        return True
+        if os.path.exists(path):
+            return True
+
+        url = self.config.get("DATA", "SOURCE_URL")
+        if url is None or url == '':
+            self.log.error('File source url is not specified')
+            raise Exception('File source url is not specified')
+
+        self.log.info(f'Data file doesn\'t exist')
+        return self._download(url, path)
 
         pass
 
