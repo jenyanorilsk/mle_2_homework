@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Custom
+*.bat
+*.log
+data/*
+!data/generated.csv
+models/*
