@@ -29,6 +29,7 @@ class Processor():
         self.config_path = os.path.join(os.getcwd(), 'config.ini')
         self.config.read(self.config_path)
 
+        # получаем контекст и сессию спарка
         try:
             self.adapter = SparkAdapter()
             self.sc = self.adapter.get_context()
@@ -36,6 +37,7 @@ class Processor():
         except:
             self.log.error(traceback.format_exc())
 
+        # подгружаем ранее сохраненные модели
         if not self._load_models():
             raise Exception('Can\'t load models')
         
@@ -43,10 +45,15 @@ class Processor():
         pass
 
     def _load_watched(self) -> bool:
+        """
+        Загрузка матрицы просмотренных фильмов
+        """
+
         path = self.config.get("MODEL", "WATCHED_PATH")
         if path is None or not os.path.exists(path):
             self.log.error('Matrix of watched movies doesn\'t exists')
             return False
+        
         self.log.info(f'Reading {path}')
         try:
             self.watched = CoordinateMatrix(self.spark.read.parquet(path) \
@@ -57,10 +64,15 @@ class Processor():
         return True
     
     def _load_tf(self) -> bool:
+        """
+        Загрузка TF
+        """
+
         path = self.config.get("MODEL", "TF_PATH")
         if path is None or not os.path.exists(path):
             self.log.error('TF model doesn\'t exists')
             return False
+        
         self.log.info(f'Reading {path}')
         try:
             self.hashingTF = HashingTF.load(path)
@@ -70,10 +82,15 @@ class Processor():
         return True
     
     def _load_idf(self) -> bool:
+        """
+        Загрузка IDF
+        """
+
         path = self.config.get("MODEL", "IDF_PATH")
         if path is None or not os.path.exists(path):
             self.log.error('IDF model doesn\'t exists')
             return False
+        
         self.log.info(f'Reading {path}')
         try:
             self.idf = IDFModel.load(path)
@@ -83,10 +100,16 @@ class Processor():
         return True
     
     def _load_idf_features(self) -> bool:
+        """
+        Загрузка ранее рассчитанных IDF-фичей для пользователей
+        из датасета
+        """
+        
         path = self.config.get("MODEL", "IDF_FEATURES_PATH")
         if path is None or not os.path.exists(path):
             self.log.error('IDF features doesn\'t exists')
             return False
+        
         self.log.info(f'Reading {path}')
         try:
             self.idf_features = self.spark.read.load(path)
@@ -96,7 +119,10 @@ class Processor():
         return True
 
     def _load_models(self) -> bool:
-        
+        """
+        Последовательная загрузка всех моделей
+        """
+
         self.log.info('Loading Matrix of watched movies')
         if not self._load_watched():
             return False
@@ -115,8 +141,13 @@ class Processor():
 
         return True
     
-    def _get_recomendation(self, ordered_similarity, max_count=5):
-        
+    def _get_recomendation(self, ordered_similarity, max_count=5) -> list:
+        """
+        Рассчет рекомендаций на основе схожести пользователей
+        На вход принимает список обратно-упорядоченных по значению IndexedRow
+
+        На выходе отдаёт список кортежей (movie_id, rank)
+        """
         # преобразуем типы, чтобы использовать умножение, идея в следующе:
         # будем использовать похожесть пользователя как вес для просмотренных им фильмов
         # таким образом мы сможем посчитать взвешенную по похожести зрителей сумму фильма (ранг)
@@ -135,6 +166,10 @@ class Processor():
         return result
 
     def sample(self):
+        """
+        Выводит рекомендации для случайно выбранного пользователя из датасета
+        """
+
         # получим матрицу (пользователи, фичи)
         temp_matrix = IndexedRowMatrix(self.idf_features.rdd.map(
             lambda row: IndexedRow(row["user_id"], Vectors.dense(row["features"]))
@@ -168,7 +203,11 @@ class Processor():
         pass
 
     def random(self):
-        
+        """
+        Выводит рекомендации для пользователя, чьи просмотры фильмов сгенерированны случайно
+        То есть для такого, которого нет в базе
+        """
+
         watched_movies = np.random.randint(low=0, high=self.watched.numCols(), size=int(self.watched.numCols()/4)).tolist()
         newdf = self.sc.parallelize([[-1, watched_movies]]).toDF(schema=["user_id", "movie_ids"])
         new_tf_features = self.hashingTF.transform(newdf)

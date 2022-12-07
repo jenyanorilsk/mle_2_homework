@@ -66,6 +66,9 @@ class Trainer():
         return os.path.exists(path)
     
     def _train_tf(self, grouped):
+        """
+        Обучение TF модели
+        """
 
         path = "./models/TF_MODEL"
         if not self._remove_stored(path):
@@ -94,6 +97,9 @@ class Trainer():
         return tf_features
     
     def _train_idf(self, tf_features) -> bool:
+        """
+        Обучение IDF модели
+        """
 
         path = "./models/IDF_MODEL"
         if not self._remove_stored(path):
@@ -103,9 +109,7 @@ class Trainer():
         idf = IDF(inputCol="rawFeatures", outputCol="features")
         idf = idf.fit(tf_features)
 
-
         self.log.info(f"IDF model type: {type(idf)}")
-
 
         try:
             idf.write().overwrite().save(path)

@@ -21,6 +21,7 @@ class SparkAdapter():
         self.config_path = os.path.join(os.getcwd(), 'config.ini')
         self.config.read(self.config_path)
         
+        # создаём конфиг спарка и подтяги часть значений из config.ini
         self.spark_config = SparkConf()
         self.spark_config.set("spark.app.name", "homework")
         self.spark_config.set("spark.master", "local")
@@ -40,10 +41,12 @@ class SparkAdapter():
 
         self.num_partitions = self.config.get("SPARK", "NUM_PARTITIONS", fallback=None)
 
+        # выводим текущий конфиг
         self.log.info("Spark config:")
         for conf in self.spark_config.getAll():
             self.log.info(f'{conf[0].upper()} = {conf[1]}')
         
+        # инициализируем поля для хранения контекста и сессии
         self.sc = None
         self.spark = None
 
