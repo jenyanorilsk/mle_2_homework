@@ -52,11 +52,11 @@ pipeline {
                             cd mle_2_homework && docker-compose -f docker-compose-CI.yml build'''
                     }
                     finally {
-                        bat encoding: 'UTF-8', script: '''
-                            chcp 65001
-                            cd mle_2_homework
-                            docker-compose up -d
-                            '''
+                        //bat encoding: 'UTF-8', script: '''
+                        //    chcp 65001
+                        //    cd mle_2_homework
+                        //    docker-compose up -d
+                        //    '''
                     }
                 }
             }
