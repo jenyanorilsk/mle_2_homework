@@ -69,7 +69,7 @@ pipeline {
                         bat encoding: 'UTF-8', script: '''
                             chcp 65001
                             docker-compose up -d
-                            for /f %%i in ('docker ps -qf "name=^mle_2_homework-app-1"') do set containerId=%%i
+                            for /f %%i in ('docker ps -qf "name=^mle_2_homework_app_1"') do set containerId=%%i
                             echo %containerId%
                             IF "%containerId%" == "" (
                                 echo "No container running"
@@ -103,7 +103,6 @@ pipeline {
 
     }
 
-    /*
     post {
         always {
             bat encoding: 'UTF-8', script: '''
@@ -112,6 +111,5 @@ pipeline {
                     '''
         }
     }
-    */
 
 }
