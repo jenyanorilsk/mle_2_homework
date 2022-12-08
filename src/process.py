@@ -149,6 +149,8 @@ class Processor():
         На выходе отдаёт список кортежей (movie_id, rank)
         """
         
+        self.log.info('Calculate movies ranks')
+
         # преобразуем типы, чтобы использовать умножение, идея в следующе:
         # будем использовать похожесть пользователя как вес для просмотренных им фильмов
         # таким образом мы сможем посчитать взвешенную по похожести зрителей сумму фильма (ранг)
@@ -171,11 +173,15 @@ class Processor():
         Выводит рекомендации для случайно выбранного пользователя из датасета
         """
 
+        self.log.info('Sample existing user recomendation')
+
         # получим матрицу (пользователи, фичи)
         temp_matrix = IndexedRowMatrix(self.idf_features.rdd.map(
             lambda row: IndexedRow(row["user_id"], Vectors.dense(row["features"]))
         ))
         temp_block = temp_matrix.toBlockMatrix()
+
+        self.log.info('Calculate similarities')
 
         # транспонируем матрицу, чтобы получить (фичи, пользователи)
         # это нужно для метода columnSimilarities, который считает косинусное сходство
@@ -209,11 +215,15 @@ class Processor():
         То есть для такого, которого нет в базе
         """
 
+        self.log.info('Sample new user')
+
         watched_movies = np.random.randint(low=0, high=self.watched.numCols(), size=int(self.watched.numCols()/4)).tolist()
         newdf = self.sc.parallelize([[-1, watched_movies]]).toDF(schema=["user_id", "movie_ids"])
         new_tf_features = self.hashingTF.transform(newdf)
         new_idf_features = self.idf.transform(new_tf_features)
         new_idf_features = new_idf_features.first()["features"]
+
+        self.log.info('Calculate similarities')
 
         # рассчитаем похожесть нового пользователя с теми, кто уже есть в датасете
         # здесь считаем косинусное расстояние по формуле (оно здесь не нормируется, но нам и не нужно)
