@@ -21,4 +21,4 @@ ENV SPARK_WORKER_MEMORY=16G
 
 COPY . .
 
-CMD [ "spark-submit", "./src/train.py"]
+#CMD [ "spark-submit", "./src/train.py"]
