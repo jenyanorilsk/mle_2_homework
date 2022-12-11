@@ -10,7 +10,7 @@ services:
       source: ./data
       target: /data
     # в этом варианте запускается только pipeline, без теста
-    command: bash -c "spark-submit src/preprocess.py && spark-submit src/train.py && spark-submit src/process.py"
+    command: bash -c "/opt/spark/bin/spark-submit src/preprocess.py && /opt/spark/bin/spark-submit src/train.py && /opt/spark/bin/spark-submit src/process.py"
     ports:
       - 8000:8000
     environment:
