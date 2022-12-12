@@ -11,7 +11,7 @@ services:
       target: /data
     # в этом варианте запускается только тест
     # ключ -s у pytest не даёт ему перехватывать вывод, мне кажется полезно видеть лог, особенно если возникнут ошибки
-    command: bash -c "python -m pytest tests -s --disable-pytest-warnings"
+    command: bash -c "python3 -m pytest tests -s --disable-pytest-warnings"
     ports:
       - 8000:8000
     environment:
